@@ -31,6 +31,10 @@ export default function SupabaseSync() {
               scenarios:              remote.scenarios              ?? store.scenarios,
               monthlyExpenses:        remote.monthlyExpenses        ?? store.monthlyExpenses,
               monthlyExpensesRevenue: remote.monthlyExpensesRevenue ?? store.monthlyExpensesRevenue,
+              taxConfig:              remote.taxConfig              ?? store.taxConfig,
+              yearPlans:              remote.yearPlans              ?? store.yearPlans,
+              fixedCostItems:         remote.fixedCostItems         ?? store.fixedCostItems,
+              freelancers:            remote.freelancers             ?? store.freelancers,
             });
           }
         }
