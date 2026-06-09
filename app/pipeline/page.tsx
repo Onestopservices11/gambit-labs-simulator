@@ -12,7 +12,7 @@ import StatusBadge from '@/components/shared/StatusBadge';
 import type { PipelineOpportunity, PipelineStage } from '@/lib/types';
 import {
   Plus, GitBranch, Trash2, CalendarRange, TrendingUp,
-  AlertTriangle, CheckCircle2, ChevronDown, Target, Info,
+  AlertTriangle, CheckCircle2, ChevronDown, Target, Info, Pencil,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -39,13 +39,25 @@ const SOURCE_LABELS: Record<string, string> = {
 
 const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
-function AddOpportunityModal({ onAdd, onClose }: { onAdd: (o: PipelineOpportunity) => void; onClose: () => void }) {
-  const [stage, setStage] = useState<PipelineStage>('lead');
+function AddOpportunityModal({ onAdd, onSave, onClose, initial }: {
+  onAdd?: (o: PipelineOpportunity) => void;
+  onSave?: (id: string, o: Partial<PipelineOpportunity>) => void;
+  onClose: () => void;
+  initial?: PipelineOpportunity;
+}) {
+  const isEdit = !!initial;
+  const [stage, setStage] = useState<PipelineStage>(initial?.stage ?? 'lead');
   const [form, setForm] = useState({
-    clientName: '', opportunityName: '', service: '',
-    estimatedValue: 15000, probability: 10, responsible: '',
-    expectedCloseDate: new Date().toISOString().split('T')[0],
-    nextAction: '', source: 'outbound' as PipelineOpportunity['source'], notes: '',
+    clientName:        initial?.clientName        ?? '',
+    opportunityName:   initial?.opportunityName   ?? '',
+    service:           initial?.service           ?? '',
+    estimatedValue:    initial?.estimatedValue    ?? 15000,
+    probability:       initial?.probability       ?? 10,
+    responsible:       initial?.responsible       ?? '',
+    expectedCloseDate: initial?.expectedCloseDate ?? new Date().toISOString().split('T')[0],
+    nextAction:        initial?.nextAction        ?? '',
+    source:            initial?.source            ?? 'outbound' as PipelineOpportunity['source'],
+    notes:             initial?.notes             ?? '',
   });
 
   function handleStageChange(s: PipelineStage) {
@@ -55,7 +67,11 @@ function AddOpportunityModal({ onAdd, onClose }: { onAdd: (o: PipelineOpportunit
 
   function handleSubmit() {
     if (!form.clientName) return;
-    onAdd({ ...form, stage, id: `pip-${Date.now()}`, createdAt: new Date().toISOString().split('T')[0] });
+    if (isEdit && initial && onSave) {
+      onSave(initial.id, { ...form, stage });
+    } else if (onAdd) {
+      onAdd({ ...form, stage, id: `pip-${Date.now()}`, createdAt: new Date().toISOString().split('T')[0] });
+    }
     onClose();
   }
 
@@ -63,7 +79,7 @@ function AddOpportunityModal({ onAdd, onClose }: { onAdd: (o: PipelineOpportunit
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="p-6 border-b border-slate-100">
-          <h2 className="text-lg font-bold text-slate-900">Nova Oportunidade</h2>
+          <h2 className="text-lg font-bold text-slate-900">{isEdit ? 'Editar Oportunidade' : 'Nova Oportunidade'}</h2>
         </div>
         <div className="p-6 space-y-4">
           {[
@@ -101,7 +117,7 @@ function AddOpportunityModal({ onAdd, onClose }: { onAdd: (o: PipelineOpportunit
         </div>
         <div className="p-6 border-t border-slate-100 flex gap-3 justify-end">
           <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">Cancelar</button>
-          <button onClick={handleSubmit} className="px-5 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700">Adicionar</button>
+          <button onClick={handleSubmit} className="px-5 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700">{isEdit ? 'Guardar' : 'Adicionar'}</button>
         </div>
       </div>
     </div>
@@ -109,9 +125,10 @@ function AddOpportunityModal({ onAdd, onClose }: { onAdd: (o: PipelineOpportunit
 }
 
 export default function PipelinePage() {
-  const { yearPlans, pipeline, addOpportunity, removeOpportunity } = useAppStore();
-  const [showModal, setShowModal]     = useState(false);
-  const [filterStage, setFilterStage] = useState<string>('all');
+  const { yearPlans, pipeline, addOpportunity, updateOpportunity, removeOpportunity } = useAppStore();
+  const [showModal, setShowModal]         = useState(false);
+  const [editOpp, setEditOpp]             = useState<PipelineOpportunity | null>(null);
+  const [filterStage, setFilterStage]     = useState<string>('all');
 
   const today       = new Date();
   const currentYear = today.getFullYear();
@@ -503,9 +520,14 @@ export default function PipelinePage() {
                       ) : <span className="text-xs text-slate-300">—</span>}
                     </td>
                     <td className="px-4 py-3">
-                      <button onClick={() => removeOpportunity(opp.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => setEditOpp(opp)} className="p-1.5 rounded-lg hover:bg-indigo-50 text-slate-300 hover:text-indigo-500">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => removeOpportunity(opp.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -516,6 +538,7 @@ export default function PipelinePage() {
       )}
 
       {showModal && <AddOpportunityModal onAdd={addOpportunity} onClose={() => setShowModal(false)} />}
+      {editOpp && <AddOpportunityModal initial={editOpp} onSave={updateOpportunity} onClose={() => setEditOpp(null)} />}
     </div>
   );
 }
