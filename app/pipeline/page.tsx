@@ -163,16 +163,16 @@ export default function PipelinePage() {
     () => pipeline.filter(p => p.expectedCloseDate?.startsWith(`${selectedYear}-`) && p.stage !== 'closed_lost'),
     [pipeline, selectedYear]
   );
-  const yearWeighted = yearPipeline.reduce((s, p) => s + p.estimatedValue * (p.probability / 100), 0);
+  const yearTotal    = yearPipeline.reduce((s, p) => s + p.estimatedValue, 0);
   const yearWon      = yearPipeline.filter(p => p.stage === 'closed_won').reduce((s, p) => s + p.estimatedValue, 0);
-  const yearCovPct   = annualGoal > 0 ? (yearWeighted / annualGoal) * 100 : 0;
+  const yearCovPct   = annualGoal > 0 ? (yearTotal / annualGoal) * 100 : 0;
 
   // Month-by-month coverage for selected year (all 12 months)
   const monthlyCoverage = useMemo(() => {
     return Array.from({ length: 12 }, (_, m) => {
       const monthStr = `${selectedYear}-${String(m + 1).padStart(2, '0')}`;
       const opps = pipeline.filter(p => p.stage !== 'closed_lost' && p.expectedCloseDate?.startsWith(monthStr));
-      const wVal = opps.reduce((s, p) => s + p.estimatedValue * (p.probability / 100), 0);
+      const wVal = opps.reduce((s, p) => s + p.estimatedValue, 0);
       const isPast = selectedYear < currentYear || (selectedYear === currentYear && m < currentMonth);
       const isCurrent = selectedYear === currentYear && m === currentMonth;
       return {
@@ -246,17 +246,17 @@ export default function PipelinePage() {
         {/* Cobertura do ano selecionado */}
         <div className={`rounded-xl border p-5 ${
           annualGoal === 0 ? 'bg-white border-slate-200'
-          : yearWeighted >= annualGoal ? 'bg-emerald-50 border-emerald-200'
-          : yearWeighted >= annualGoal * 0.5 ? 'bg-amber-50 border-amber-200'
+          : yearTotal >= annualGoal ? 'bg-emerald-50 border-emerald-200'
+          : yearTotal >= annualGoal * 0.5 ? 'bg-amber-50 border-amber-200'
           : 'bg-red-50 border-red-200'
         }`}>
-          <p className="text-xs text-slate-500 mb-1">Pipeline {selectedYear} (ponderado)</p>
+          <p className="text-xs text-slate-500 mb-1">Pipeline {selectedYear}</p>
           <p className={`text-2xl font-bold ${
             annualGoal === 0 ? 'text-slate-900'
-            : yearWeighted >= annualGoal ? 'text-emerald-700'
-            : yearWeighted >= annualGoal * 0.5 ? 'text-amber-700'
+            : yearTotal >= annualGoal ? 'text-emerald-700'
+            : yearTotal >= annualGoal * 0.5 ? 'text-amber-700'
             : 'text-red-700'
-          }`}>{formatCurrency(yearWeighted)}</p>
+          }`}>{formatCurrency(yearTotal)}</p>
           {annualGoal > 0 && (
             <p className="text-xs text-slate-400 mt-1">
               {yearCovPct.toFixed(0)}% da meta anual
@@ -293,7 +293,7 @@ export default function PipelinePage() {
                 Cobertura da Pipeline — {selectedYear}
               </p>
               <p className="text-lg font-bold text-slate-900 mt-0.5">
-                {formatCurrency(yearWeighted)}
+                {formatCurrency(yearTotal)}
                 <span className="text-sm font-normal text-slate-400 ml-2">de {formatCurrency(annualGoal)}</span>
               </p>
             </div>
@@ -307,14 +307,14 @@ export default function PipelinePage() {
           {/* Barra com 3 faixas: ganho / pipeline / em falta */}
           <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden flex">
             <div className="h-full bg-emerald-500" style={{ width: `${Math.min(100, (yearWon / annualGoal) * 100)}%` }} />
-            <div className="h-full bg-indigo-400" style={{ width: `${Math.min(100 - (yearWon / annualGoal) * 100, ((yearWeighted - yearWon) / annualGoal) * 100)}%` }} />
+            <div className="h-full bg-indigo-400" style={{ width: `${Math.min(100 - (yearWon / annualGoal) * 100, ((yearTotal - yearWon) / annualGoal) * 100)}%` }} />
           </div>
           <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> Ganho: {formatCurrency(yearWon)}</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-indigo-400 inline-block" /> Pipeline: {formatCurrency(yearWeighted - yearWon)}</span>
-            {yearWeighted < annualGoal && (
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-indigo-400 inline-block" /> Pipeline: {formatCurrency(yearTotal - yearWon)}</span>
+            {yearTotal < annualGoal && (
               <span className="flex items-center gap-1 text-red-500 font-semibold">
-                <AlertTriangle className="w-3 h-3" /> Em falta: {formatCurrency(annualGoal - yearWeighted)}
+                <AlertTriangle className="w-3 h-3" /> Em falta: {formatCurrency(annualGoal - yearTotal)}
               </span>
             )}
           </div>
@@ -377,7 +377,7 @@ export default function PipelinePage() {
               );
             })}
           </div>
-          <p className="text-xs text-slate-400 mt-2">Meta por mês: {formatCurrency(monthlyGoal)} · valores ponderados</p>
+          <p className="text-xs text-slate-400 mt-2">Meta por mês: {formatCurrency(monthlyGoal)}</p>
         </div>
       )}
 
@@ -485,7 +485,6 @@ export default function PipelinePage() {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Oportunidade</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Valor</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Prob.</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ponderado</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Fase</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Fecho</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">% da Meta/mês</th>
@@ -497,8 +496,7 @@ export default function PipelinePage() {
                 const oppYear    = opp.expectedCloseDate ? parseInt(opp.expectedCloseDate.slice(0, 4), 10) : selectedYear;
                 const oppPlan    = yearPlans.find(y => y.year === oppYear);
                 const oppMonthly = oppPlan ? oppPlan.revenueTarget / 12 : 0;
-                const oppW       = opp.estimatedValue * (opp.probability / 100);
-                const pctGoal    = oppMonthly > 0 ? (oppW / oppMonthly) * 100 : 0;
+                const pctGoal    = oppMonthly > 0 ? (opp.estimatedValue / oppMonthly) * 100 : 0;
                 return (
                   <tr key={opp.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3">
@@ -507,9 +505,8 @@ export default function PipelinePage() {
                     </td>
                     <td className="px-4 py-3 text-right font-medium text-slate-900">{formatCurrency(opp.estimatedValue)}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className="text-sm font-semibold text-indigo-600">{opp.probability}%</span>
+                      <span className="text-sm font-semibold text-slate-400">{opp.probability}%</span>
                     </td>
-                    <td className="px-4 py-3 text-right font-medium text-emerald-700">{formatCurrency(oppW)}</td>
                     <td className="px-4 py-3 text-center"><StatusBadge status={opp.stage} /></td>
                     <td className="px-4 py-3 text-center text-xs text-slate-500">{opp.expectedCloseDate}</td>
                     <td className="px-4 py-3 text-center hidden lg:table-cell">
