@@ -75,6 +75,10 @@ export default function SupabaseSync() {
     store.scenarios,
     store.monthlyExpenses,
     store.monthlyExpensesRevenue,
+    store.taxConfig,
+    store.yearPlans,
+    store.fixedCostItems,
+    store.freelancers,
   ]);
 
   // Status indicator — tiny pill in bottom-right

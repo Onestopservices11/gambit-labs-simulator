@@ -21,8 +21,10 @@ export async function loadFromSupabase(): Promise<Partial<AppState> | null> {
     scenarios:               data.scenarios,
     monthlyExpenses:         data.monthly_expenses,
     monthlyExpensesRevenue:  data.monthly_expenses_revenue,
-    taxConfig:               data.tax_config   || undefined,
-    yearPlans:               data.year_plans   ?? [],
+    taxConfig:               data.tax_config        || undefined,
+    yearPlans:               data.year_plans         ?? [],
+    fixedCostItems:          data.fixed_cost_items   ?? [],
+    freelancers:             data.freelancers         ?? [],
   };
 }
 
@@ -42,6 +44,8 @@ export async function saveToSupabase(state: AppState & { financings: unknown[]; 
     monthly_expenses_revenue: state.monthlyExpensesRevenue,
     tax_config:               state.taxConfig,
     year_plans:               state.yearPlans,
+    fixed_cost_items:         state.fixedCostItems,
+    freelancers:              state.freelancers,
   };
 
   await supabase
