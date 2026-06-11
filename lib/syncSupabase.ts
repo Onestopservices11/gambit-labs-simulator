@@ -25,6 +25,7 @@ export async function loadFromSupabase(): Promise<Partial<AppState> | null> {
     yearPlans:               data.year_plans         ?? [],
     fixedCostItems:          data.fixed_cost_items   ?? [],
     freelancers:             data.freelancers         ?? [],
+    priceSimulations:        data.price_simulations   ?? [],
   };
 }
 
@@ -46,6 +47,7 @@ export async function saveToSupabase(state: AppState & { financings: unknown[]; 
     year_plans:               state.yearPlans,
     fixed_cost_items:         state.fixedCostItems,
     freelancers:              state.freelancers,
+    price_simulations:        state.priceSimulations,
   };
 
   await supabase

@@ -35,6 +35,7 @@ export default function SupabaseSync() {
               yearPlans:              remote.yearPlans              ?? store.yearPlans,
               fixedCostItems:         remote.fixedCostItems         ?? store.fixedCostItems,
               freelancers:            remote.freelancers             ?? store.freelancers,
+              priceSimulations:       remote.priceSimulations        ?? store.priceSimulations,
             });
           }
         }

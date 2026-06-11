@@ -22,6 +22,7 @@ import {
   CalendarRange,
   Receipt,
   FlaskConical,
+  Calculator,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -36,6 +37,7 @@ const navItems = [
   { href: '/investimentos', label: 'Investimentos', icon: TrendingUp },
   { href: '/subprojetos', label: 'Subprojetos', icon: FolderKanban },
   { href: '/financiamento', label: 'Financiamento', icon: Banknote },
+  { href: '/simulador-preco', label: 'Simulador de Preço', icon: Calculator },
   { href: '/pipeline', label: 'Pipeline Comercial', icon: GitBranch },
   { href: '/planeamento', label: 'Planeamento 5 Anos', icon: CalendarRange },
   { href: '/resultados', label: 'Resultados Reais', icon: BarChart3 },

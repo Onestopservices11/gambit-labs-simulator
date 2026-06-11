@@ -317,6 +317,39 @@ export interface MonthlyExpense {
   category: 'labor' | 'subcontractor' | 'tools' | 'materials' | 'other';
 }
 
+export interface PriceSimTeamMember {
+  id: string;
+  name: string;
+  role: string;
+  hours: number;
+  hourlyRate: number;
+}
+
+export interface PriceSimCost {
+  id: string;
+  label: string;
+  amount: number;
+  category: 'materials' | 'subcontractor' | 'travel' | 'software' | 'other';
+}
+
+export type PriceSimStatus = 'draft' | 'approved' | 'sent';
+
+export interface PriceSimulation {
+  id: string;
+  name: string;
+  client: string;
+  description: string;
+  createdAt: string;
+  status: PriceSimStatus;
+  team: PriceSimTeamMember[];
+  directCosts: PriceSimCost[];
+  fixedCostPct: number;
+  fixedCostMonths: number;
+  targetMarginPct: number;
+  applyIVA: boolean;
+  notes: string;
+}
+
 export interface AppState {
   assumptions: Assumptions;
   employees: Employee[];
@@ -332,4 +365,5 @@ export interface AppState {
   yearPlans: YearPlan[];
   fixedCostItems: FixedCostItem[];
   freelancers: Freelancer[];
+  priceSimulations: PriceSimulation[];
 }

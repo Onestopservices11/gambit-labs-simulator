@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AppState, Assumptions, Employee, Investment, SubProject, PipelineOpportunity, MonthlyResult, Scenario, Financing, MonthlyExpense, TaxConfig, YearPlan, FixedCostItem, Freelancer } from './types';
+import type { AppState, Assumptions, Employee, Investment, SubProject, PipelineOpportunity, MonthlyResult, Scenario, Financing, MonthlyExpense, TaxConfig, YearPlan, FixedCostItem, Freelancer, PriceSimulation } from './types';
 import { defaultAssumptions, mockEmployees, mockInvestments, mockSubProjects, mockPipeline, mockMonthlyResults, mockScenarios } from './mockData';
 
 interface AppStore extends AppState {
@@ -37,6 +37,9 @@ interface AppStore extends AppState {
   addFreelancer: (f: Freelancer) => void;
   updateFreelancer: (id: string, f: Partial<Freelancer>) => void;
   removeFreelancer: (id: string) => void;
+  addPriceSim: (sim: PriceSimulation) => void;
+  updatePriceSim: (id: string, sim: Partial<PriceSimulation>) => void;
+  removePriceSim: (id: string) => void;
   resetToDemo: () => void;
 }
 
@@ -69,6 +72,7 @@ const initialState: AppState = {
   yearPlans: [],
   fixedCostItems: [],
   freelancers: [],
+  priceSimulations: [],
   pipeline: mockPipeline,
   monthlyResults: mockMonthlyResults,
   scenarios: mockScenarios,
@@ -159,6 +163,13 @@ export const useAppStore = create<AppStore>()(
           }
           return { yearPlans: [...state.yearPlans, plan] };
         }),
+
+      addPriceSim: (sim) =>
+        set((state) => ({ priceSimulations: [...state.priceSimulations, sim] })),
+      updatePriceSim: (id, sim) =>
+        set((state) => ({ priceSimulations: state.priceSimulations.map((s) => s.id === id ? { ...s, ...sim } : s) })),
+      removePriceSim: (id) =>
+        set((state) => ({ priceSimulations: state.priceSimulations.filter((s) => s.id !== id) })),
 
       resetToDemo: () => set(initialState),
     }),
